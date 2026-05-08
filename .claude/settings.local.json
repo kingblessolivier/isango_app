@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(gh pr *)",
-      "PowerShell(gh pr list --state all --limit 5 2>&1)"
-    ]
-  }
-}
