@@ -55,175 +55,240 @@ class _SignInScreenState extends State<SignInScreen> {
         });
       }
     }
-    // No finally: success navigates away so _isLoading reset is unnecessary;
-    // error is fully handled in catch above.
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Isango'),
-        automaticallyImplyLeading: false,
-      ),
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.page),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppSpacing.lg),
-                  const Text('Sign in', style: AppTextStyles.headline, textAlign: TextAlign.center),
-                  const SizedBox(height: AppSpacing.xs),
-                  const Text(
-                    'Welcome back',
-                    style: AppTextStyles.bodyMuted,
-                    textAlign: TextAlign.center,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.cardWhite,
+                  borderRadius: BorderRadius.circular(AppRadii.card),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: AppColors.outlineVariant.withValues(alpha: 0.3),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  // Submission error banner
-                  if (_errorMessage != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: AppColors.criticalRed.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(AppRadii.input),
-                        border: Border.all(color: AppColors.criticalRed),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: AppColors.criticalRed,
-                            size: 18,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: AppTextStyles.bodyMuted
-                                  .copyWith(color: AppColors.criticalRed),
+                ),
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Column(
+                      children: [
+                        Text(
+                          'Isango',
+                          style: AppTextStyles.display,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'Welcome back!',
+                          style: AppTextStyles.title,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    // Intro
+                    Text(
+                      'Sign in to access your personalized campus events feed.',
+                      style: AppTextStyles.bodyMuted,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    // Submission error banner
+                    if (_errorMessage != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.criticalRed.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(AppRadii.input),
+                          border: Border.all(color: AppColors.criticalRed),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: AppColors.criticalRed, size: 18),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: AppTextStyles.bodyMuted
+                                    .copyWith(color: AppColors.criticalRed),
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    // Form
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Email
+                          Text(
+                            'Email Address',
+                            style: AppTextStyles.label
+                                .copyWith(color: AppColors.nearBlackInk),
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            enabled: !_isLoading,
+                            decoration: const InputDecoration(
+                              hintText: 'student@ur.ac.rw',
+                              prefixIcon: Icon(Icons.mail_outline,
+                                  color: AppColors.mutedOperationalInk),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your university email';
+                              }
+                              if (!value.trim().toLowerCase().endsWith('@ur.ac.rw')) {
+                                return 'Please use your university email (e.g. student@ur.ac.rw)';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          // Password label row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Password',
+                                style: AppTextStyles.label
+                                    .copyWith(color: AppColors.nearBlackInk),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                onPressed: _isLoading ? null : () {},
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: AppTextStyles.label.copyWith(
+                                      color: AppColors.logisticsNavy),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            enabled: !_isLoading,
+                            onFieldSubmitted: (_) => _submit(),
+                            decoration: InputDecoration(
+                              hintText: '••••••••',
+                              prefixIcon: const Icon(Icons.lock_outline,
+                                  color: AppColors.mutedOperationalInk),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: AppColors.mutedOperationalInk,
+                                ),
+                                onPressed: _isLoading
+                                    ? null
+                                    : () => setState(() =>
+                                        _obscurePassword = !_obscurePassword),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your password';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          FilledButton(
+                            onPressed: _isLoading ? null : _submit,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(AppRadii.button),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text('Sign In', style: AppTextStyles.title.copyWith(color: Colors.white)),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    const SizedBox(height: AppSpacing.lg),
+                    // Footer
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          enabled: !_isLoading,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            hintText: 'you@example.com',
-                            prefixIcon: Icon(Icons.alternate_email,
-                                color: AppColors.mutedOperationalInk),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,}$')
-                                .hasMatch(value.trim())) {
-                              return 'Enter a valid email address';
-                            }
-                            return null;
-                          },
+                        Text(
+                          "Don't have an account?",
+                          style: AppTextStyles.bodyMuted,
                         ),
-                        const SizedBox(height: AppSpacing.md),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          textInputAction: TextInputAction.done,
-                          enabled: !_isLoading,
-                          onFieldSubmitted: (_) => _submit(),
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            hintText: '••••••••',
-                            prefixIcon: const Icon(Icons.lock_outline,
-                                color: AppColors.mutedOperationalInk),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: AppColors.mutedOperationalInk,
-                              ),
-                              onPressed: _isLoading
-                                  ? null
-                                  : () => setState(() =>
-                                      _obscurePassword = !_obscurePassword),
-                            ),
+                        TextButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => Navigator.pushNamed(
+                                  context, AppRoutes.signUp),
+                          child: Text(
+                            'Sign Up',
+                            style: AppTextStyles.label
+                                .copyWith(color: AppColors.logisticsNavy),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: _isLoading ? null : () {},
-                            child: const Text('Forgot password?'),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        FilledButton(
-                          onPressed: _isLoading ? null : _submit,
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadii.button),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text('Sign in'),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Text(
-                        "Don't have an account?",
-                        style: AppTextStyles.bodyMuted,
-                      ),
-                      TextButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () =>
-                                Navigator.pushNamed(context, AppRoutes.signUp),
-                        child: const Text('Sign up'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                ],
+                    const SizedBox(height: AppSpacing.md),
+                    // Trust badge
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.lock_outline,
+                            size: 12,
+                            color: AppColors.mutedOperationalInk),
+                        const SizedBox(width: AppSpacing.xxs),
+                        Text('Secure University Login',
+                            style: AppTextStyles.label),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

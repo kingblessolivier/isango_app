@@ -28,24 +28,24 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
-      expect(find.text('Please enter your email'), findsOneWidget);
+      expect(find.text('Please enter your university email'), findsOneWidget);
     });
 
-    testWidgets('shows error for malformed email', (tester) async {
+    testWidgets('shows error for non-university email', (tester) async {
       await tester.pumpWidget(_buildApp());
 
-      await tester.enterText(find.byType(TextFormField).first, 'notanemail');
+      await tester.enterText(find.byType(TextFormField).first, 'student@gmail.com');
       await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
-      expect(find.text('Enter a valid email address'), findsOneWidget);
+      expect(find.text('Please use your university email (e.g. student@ur.ac.rw)'), findsOneWidget);
     });
 
     testWidgets('shows error when password is empty on submit', (tester) async {
       await tester.pumpWidget(_buildApp());
 
       await tester.enterText(
-          find.byType(TextFormField).first, 'user@example.com');
+          find.byType(TextFormField).first, 'user@ur.ac.rw');
       await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
@@ -57,7 +57,7 @@ void main() {
     testWidgets('tapping Sign up navigates to /signup', (tester) async {
       await tester.pumpWidget(_buildApp());
 
-      await tester.tap(find.text('Sign up'));
+      await tester.tap(find.text('Sign Up'));
       await tester.pumpAndSettle();
 
       expect(find.text('Sign Up'), findsOneWidget);
@@ -72,7 +72,7 @@ void main() {
       await tester.pumpWidget(_buildApp(onSignIn: (_, _) => completer.future));
 
       await tester.enterText(
-          find.byType(TextFormField).first, 'user@example.com');
+          find.byType(TextFormField).first, 'user@ur.ac.rw');
       await tester.enterText(
           find.byType(TextFormField).last, 'password123');
 
@@ -95,7 +95,7 @@ void main() {
       ));
 
       await tester.enterText(
-          find.byType(TextFormField).first, 'user@example.com');
+          find.byType(TextFormField).first, 'user@ur.ac.rw');
       await tester.enterText(
           find.byType(TextFormField).last, 'password123');
 
@@ -118,7 +118,7 @@ void main() {
       ));
 
       await tester.enterText(
-          find.byType(TextFormField).first, 'user@example.com');
+          find.byType(TextFormField).first, 'user@ur.ac.rw');
       await tester.enterText(
           find.byType(TextFormField).last, 'password123');
 

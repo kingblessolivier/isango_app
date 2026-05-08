@@ -28,6 +28,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // White-fill, 12 px-radius decoration used for all sign-up fields.
+  static InputDecoration _fieldDecoration({
+    required String hint,
+    required Widget prefixIcon,
+    Widget? suffixIcon,
+  }) =>
+      InputDecoration(
+        hintText: hint,
+        fillColor: AppColors.cardWhite,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderSide: const BorderSide(color: AppColors.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderSide: const BorderSide(color: AppColors.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderSide:
+              const BorderSide(color: AppColors.logisticsNavy, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderSide: const BorderSide(color: AppColors.criticalRed),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          borderSide:
+              const BorderSide(color: AppColors.criticalRed, width: 2),
+        ),
+      );
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -69,26 +104,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
+        backgroundColor: AppColors.cardWhite,
+        scrolledUnderElevation: 4,
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         leading: BackButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
         ),
-        title: const Text('Create account'),
+        title: Text('Create Account', style: AppTextStyles.headline),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.page),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Join Isango', style: AppTextStyles.headline, textAlign: TextAlign.center),
-                  const SizedBox(height: AppSpacing.xs),
-                  const Text(
-                    'Create your account to get started',
-                    style: AppTextStyles.bodyMuted,
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Join your campus community to never miss an event.',
+                    style: AppTextStyles.body
+                        .copyWith(color: AppColors.mutedOperationalInk),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -103,11 +143,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: AppColors.criticalRed,
-                            size: 18,
-                          ),
+                          const Icon(Icons.error_outline,
+                              color: AppColors.criticalRed, size: 18),
                           const SizedBox(width: AppSpacing.xs),
                           Expanded(
                             child: Text(
@@ -126,15 +163,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // Full Name
+                        Text(
+                          'Full Name',
+                          style: AppTextStyles.label
+                              .copyWith(color: AppColors.nearBlackInk),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
                         TextFormField(
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           enabled: !_isLoading,
-                          decoration: const InputDecoration(
-                            labelText: 'Full name',
-                            hintText: 'Your name',
-                            prefixIcon: Icon(Icons.person_outline,
+                          decoration: _fieldDecoration(
+                            hint: 'John Doe',
+                            prefixIcon: const Icon(Icons.person_outline,
                                 color: AppColors.mutedOperationalInk),
                           ),
                           validator: (value) {
@@ -145,37 +188,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           },
                         ),
                         const SizedBox(height: AppSpacing.md),
+                        // University Email
+                        Text(
+                          'University Email',
+                          style: AppTextStyles.label
+                              .copyWith(color: AppColors.nearBlackInk),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           enabled: !_isLoading,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            hintText: 'you@example.com',
-                            prefixIcon: Icon(Icons.alternate_email,
+                          decoration: _fieldDecoration(
+                            hint: 'student@ur.ac.rw',
+                            prefixIcon: const Icon(Icons.mail_outline,
                                 color: AppColors.mutedOperationalInk),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your email';
+                              return 'Please enter your university email';
                             }
-                            if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,}$')
-                                .hasMatch(value.trim())) {
-                              return 'Enter a valid email address';
+                            if (!value.trim().toLowerCase().endsWith('@ur.ac.rw')) {
+                              return 'Please use your university email (e.g. student@ur.ac.rw)';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: AppSpacing.md),
+                        // Password
+                        Text(
+                          'Password',
+                          style: AppTextStyles.label
+                              .copyWith(color: AppColors.nearBlackInk),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.next,
                           enabled: !_isLoading,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            hintText: '••••••••',
+                          decoration: _fieldDecoration(
+                            hint: '8+ characters',
                             prefixIcon: const Icon(Icons.lock_outline,
                                 color: AppColors.mutedOperationalInk),
                             suffixIcon: IconButton(
@@ -202,16 +256,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           },
                         ),
                         const SizedBox(height: AppSpacing.md),
+                        // Confirm Password
+                        Text(
+                          'Confirm Password',
+                          style: AppTextStyles.label
+                              .copyWith(color: AppColors.nearBlackInk),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirm,
                           textInputAction: TextInputAction.done,
                           enabled: !_isLoading,
                           onFieldSubmitted: (_) => _submit(),
-                          decoration: InputDecoration(
-                            labelText: 'Confirm password',
-                            hintText: '••••••••',
-                            prefixIcon: const Icon(Icons.lock_outline,
+                          decoration: _fieldDecoration(
+                            hint: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_reset,
                                 color: AppColors.mutedOperationalInk),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -241,6 +301,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           onPressed: _isLoading ? null : _submit,
                           style: FilledButton.styleFrom(
                             minimumSize: const Size.fromHeight(52),
+                            elevation: 3,
                             shape: RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.circular(AppRadii.button),
@@ -255,25 +316,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text('Create account'),
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Create Account',
+                                      style: AppTextStyles.title
+                                          .copyWith(color: Colors.white),
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    const Icon(Icons.arrow_forward,
+                                        size: 18, color: Colors.white),
+                                  ],
+                                ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'We will send you a verification link to your email after you sign up.',
+                    style: AppTextStyles.bodyMuted,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
                   Wrap(
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Already have an account?',
                         style: AppTextStyles.bodyMuted,
                       ),
                       TextButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () => Navigator.pop(context),
-                        child: const Text('Log in'),
+                        onPressed:
+                            _isLoading ? null : () => Navigator.pop(context),
+                        child: Text(
+                          'Log in',
+                          style: AppTextStyles.label
+                              .copyWith(color: AppColors.logisticsNavy),
+                        ),
                       ),
                     ],
                   ),

@@ -23,7 +23,7 @@ Widget _buildApp({
 Future<void> _fillValidForm(WidgetTester tester) async {
   final fields = find.byType(TextFormField);
   await tester.enterText(fields.at(0), 'Ada Lovelace');
-  await tester.enterText(fields.at(1), 'ada@example.com');
+  await tester.enterText(fields.at(1), 'ada@ur.ac.rw');
   await tester.enterText(fields.at(2), 'password123');
   await tester.enterText(fields.at(3), 'password123');
 }
@@ -46,18 +46,18 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
-      expect(find.text('Please enter your email'), findsOneWidget);
+      expect(find.text('Please enter your university email'), findsOneWidget);
     });
 
-    testWidgets('shows error for malformed email', (tester) async {
+    testWidgets('shows error for non-university email', (tester) async {
       await tester.pumpWidget(_buildApp());
 
       await tester.enterText(find.byType(TextFormField).at(0), 'Ada Lovelace');
-      await tester.enterText(find.byType(TextFormField).at(1), 'notanemail');
+      await tester.enterText(find.byType(TextFormField).at(1), 'ada@gmail.com');
       await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
-      expect(find.text('Enter a valid email address'), findsOneWidget);
+      expect(find.text('Please use your university email (e.g. student@ur.ac.rw)'), findsOneWidget);
     });
 
     testWidgets('shows error when password is too short', (tester) async {
@@ -169,6 +169,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Sign-up failed. Please try again.'), findsOneWidget);
 
+      await tester.ensureVisible(find.byType(FilledButton));
       await tester.tap(find.byType(FilledButton));
       await tester.pump();
       expect(find.text('Sign-up failed. Please try again.'), findsNothing);
