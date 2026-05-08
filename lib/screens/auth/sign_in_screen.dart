@@ -5,18 +5,24 @@ import 'package:isango_app/core/theme/app_radii.dart';
 import 'package:isango_app/core/theme/app_spacing.dart';
 import 'package:isango_app/core/theme/app_text_styles.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key, this.onSignIn});
+
+  /// Inject auth implementation. Null = navigate straight to home (UI-only mode).
+  /// Throw to surface the error banner; complete normally to proceed.
+  final Future<void> Function(String email, String password)? onSignIn;
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -25,10 +31,32 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _submit() async {
+    setState(() => _errorMessage = null);
+    if (!_formKey.currentState!.validate()) return;
+
+    if (widget.onSignIn == null) {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
+      return;
     }
+
+    setState(() => _isLoading = true);
+    try {
+      await widget.onSignIn!(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      if (mounted) Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Sign-in failed. Please check your credentials.';
+        });
+      }
+    }
+    // No finally: success navigates away so _isLoading reset is unnecessary;
+    // error is fully handled in catch above.
   }
 
   @override
@@ -44,10 +72,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: AppSpacing.xl),
+                  // Wordmark
                   const Center(
                     child: Text('Isango', style: AppTextStyles.display),
                   ),
                   const SizedBox(height: AppSpacing.xs),
+                  // Access explanation
                   const Center(
                     child: Text(
                       'Discover what\'s happening around you',
@@ -58,8 +88,40 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: AppSpacing.xl),
                   const Text('Welcome back', style: AppTextStyles.headline),
                   const SizedBox(height: AppSpacing.xs),
-                  const Text('Sign in to your account', style: AppTextStyles.bodyMuted),
+                  const Text(
+                    'Sign in to your account',
+                    style: AppTextStyles.bodyMuted,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
+                  // Submission error banner
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: AppColors.criticalRed.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(AppRadii.input),
+                        border: Border.all(color: AppColors.criticalRed),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppColors.criticalRed,
+                            size: 18,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: AppTextStyles.bodyMuted
+                                  .copyWith(color: AppColors.criticalRed),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   Form(
                     key: _formKey,
                     child: Column(
@@ -69,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
+                          enabled: !_isLoading,
                           decoration: const InputDecoration(
                             labelText: 'Email',
                             hintText: 'you@example.com',
@@ -89,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
+                          enabled: !_isLoading,
                           onFieldSubmitted: (_) => _submit(),
                           decoration: InputDecoration(
                             labelText: 'Password',
@@ -100,8 +164,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     : Icons.visibility_off_outlined,
                                 color: AppColors.mutedOperationalInk,
                               ),
-                              onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword),
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => setState(() =>
+                                      _obscurePassword = !_obscurePassword),
                             ),
                           ),
                           validator: (value) {
@@ -115,13 +181,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: _isLoading ? null : () {},
                             child: const Text('Forgot password?'),
                           ),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         FilledButton(
-                          onPressed: _submit,
+                          onPressed: _isLoading ? null : _submit,
                           style: FilledButton.styleFrom(
                             minimumSize: const Size.fromHeight(52),
                             shape: RoundedRectangleBorder(
@@ -129,22 +195,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                   BorderRadius.circular(AppRadii.button),
                             ),
                           ),
-                          child: const Text('Log in'),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Sign in'),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Text(
                         "Don't have an account?",
                         style: AppTextStyles.bodyMuted,
                       ),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, AppRoutes.signUp),
+                        onPressed: _isLoading
+                            ? null
+                            : () =>
+                                Navigator.pushNamed(context, AppRoutes.signUp),
                         child: const Text('Sign up'),
                       ),
                     ],

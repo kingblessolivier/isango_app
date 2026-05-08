@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isango_app/screens/auth/login_screen.dart';
+import 'package:isango_app/screens/auth/sign_in_screen.dart';
 import 'package:isango_app/screens/auth/signup_screen.dart';
 import 'package:isango_app/screens/home/home_screen.dart';
 import 'package:isango_app/screens/saved/saved_screen.dart';
@@ -20,7 +20,7 @@ class IsangoApp extends StatelessWidget {
       theme: AppTheme.light(),
       initialRoute: AppRoutes.login,
       routes: {
-        AppRoutes.login: (context) => const LoginScreen(),
+        AppRoutes.login: (context) => const SignInScreen(),
         AppRoutes.signUp: (context) => const SignUpScreen(),
         AppRoutes.home: (context) => const HomeScreen(),
         AppRoutes.saved: (context) => const SavedScreen(),
