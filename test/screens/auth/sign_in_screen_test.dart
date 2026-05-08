@@ -69,7 +69,7 @@ void main() {
         (tester) async {
       final completer = Completer<void>();
 
-      await tester.pumpWidget(_buildApp(onSignIn: (_, __) => completer.future));
+      await tester.pumpWidget(_buildApp(onSignIn: (_, _) => completer.future));
 
       await tester.enterText(
           find.byType(TextFormField).first, 'user@example.com');
@@ -91,7 +91,7 @@ void main() {
 
     testWidgets('shows error banner when onSignIn throws', (tester) async {
       await tester.pumpWidget(_buildApp(
-        onSignIn: (_, __) async => throw Exception('bad credentials'),
+        onSignIn: (_, _) async => throw Exception('bad credentials'),
       ));
 
       await tester.enterText(
@@ -111,7 +111,7 @@ void main() {
     testWidgets('clears error banner on next submit attempt', (tester) async {
       var callCount = 0;
       await tester.pumpWidget(_buildApp(
-        onSignIn: (_, __) async {
+        onSignIn: (_, _) async {
           callCount++;
           if (callCount == 1) throw Exception('fail');
         },

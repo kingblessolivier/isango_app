@@ -62,6 +62,10 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Isango'),
+        automaticallyImplyLeading: false,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -71,26 +75,13 @@ class _SignInScreenState extends State<SignInScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: AppSpacing.xl),
-                  // Wordmark
-                  const Center(
-                    child: Text('Isango', style: AppTextStyles.display),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  // Access explanation
-                  const Center(
-                    child: Text(
-                      'Discover what\'s happening around you',
-                      style: AppTextStyles.bodyMuted,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  const Text('Welcome back', style: AppTextStyles.headline),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Sign in', style: AppTextStyles.headline, textAlign: TextAlign.center),
                   const SizedBox(height: AppSpacing.xs),
                   const Text(
-                    'Sign in to your account',
+                    'Welcome back',
                     style: AppTextStyles.bodyMuted,
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   // Submission error banner

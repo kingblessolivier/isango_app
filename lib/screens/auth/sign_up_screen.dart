@@ -84,11 +84,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Join Isango', style: AppTextStyles.headline),
+                  const Text('Join Isango', style: AppTextStyles.headline, textAlign: TextAlign.center),
                   const SizedBox(height: AppSpacing.xs),
                   const Text(
                     'Create your account to get started',
                     style: AppTextStyles.bodyMuted,
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   // Submission error banner
