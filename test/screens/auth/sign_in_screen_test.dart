@@ -25,7 +25,7 @@ void main() {
     testWidgets('shows error when email is empty on submit', (tester) async {
       await tester.pumpWidget(_buildApp());
 
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
       expect(find.text('Please enter your email'), findsOneWidget);
@@ -35,7 +35,7 @@ void main() {
       await tester.pumpWidget(_buildApp());
 
       await tester.enterText(find.byType(TextFormField).first, 'notanemail');
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
       expect(find.text('Enter a valid email address'), findsOneWidget);
@@ -46,7 +46,7 @@ void main() {
 
       await tester.enterText(
           find.byType(TextFormField).first, 'user@example.com');
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
       expect(find.text('Please enter your password'), findsOneWidget);
@@ -76,7 +76,7 @@ void main() {
       await tester.enterText(
           find.byType(TextFormField).last, 'password123');
 
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -99,7 +99,7 @@ void main() {
       await tester.enterText(
           find.byType(TextFormField).last, 'password123');
 
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
       expect(
@@ -123,7 +123,7 @@ void main() {
           find.byType(TextFormField).last, 'password123');
 
       // First submit — triggers error
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
       expect(
         find.text('Sign-in failed. Please check your credentials.'),
@@ -131,7 +131,7 @@ void main() {
       );
 
       // Second submit — error should be cleared immediately
-      await tester.tap(find.text('Sign in'));
+      await tester.tap(find.byType(FilledButton));
       await tester.pump();
       expect(
         find.text('Sign-in failed. Please check your credentials.'),
