@@ -32,7 +32,7 @@ lib/
   screens/
     auth/
       sign_in_screen.dart         # /login — email/password, loading state, error banner
-      signup_screen.dart          # /signup — name/email/password/confirm
+      sign_up_screen.dart         # /signup — name/email/password/confirm
     home/
     saved/
     settings/
