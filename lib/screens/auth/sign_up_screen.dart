@@ -6,7 +6,12 @@ import 'package:isango_app/core/theme/app_spacing.dart';
 import 'package:isango_app/core/theme/app_text_styles.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  const SignUpScreen({super.key, this.onSignUp});
+
+  /// Inject auth implementation. Null = navigate straight to verify-email (UI-only mode).
+  /// Throw to surface the error banner; complete normally to proceed.
+  final Future<void> Function(String name, String email, String password)?
+      onSignUp;
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -20,6 +25,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -30,9 +37,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+  Future<void> _submit() async {
+    setState(() => _errorMessage = null);
+    if (!_formKey.currentState!.validate()) return;
+
+    if (widget.onSignUp == null) {
+      Navigator.pushReplacementNamed(context, AppRoutes.verifyEmail);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await widget.onSignUp!(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.verifyEmail);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Sign-up failed. Please try again.';
+        });
+      }
     }
   }
 
@@ -40,7 +70,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(),
+        leading: BackButton(
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
+        ),
         title: const Text('Create account'),
       ),
       body: SafeArea(
@@ -59,6 +91,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     style: AppTextStyles.bodyMuted,
                   ),
                   const SizedBox(height: AppSpacing.lg),
+                  // Submission error banner
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: AppColors.criticalRed.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(AppRadii.input),
+                        border: Border.all(color: AppColors.criticalRed),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppColors.criticalRed,
+                            size: 18,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: AppTextStyles.bodyMuted
+                                  .copyWith(color: AppColors.criticalRed),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   Form(
                     key: _formKey,
                     child: Column(
@@ -68,9 +129,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           controller: _nameController,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
+                          enabled: !_isLoading,
                           decoration: const InputDecoration(
                             labelText: 'Full name',
                             hintText: 'Your name',
+                            prefixIcon: Icon(Icons.person_outline,
+                                color: AppColors.mutedOperationalInk),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -84,9 +148,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
+                          enabled: !_isLoading,
                           decoration: const InputDecoration(
                             labelText: 'Email',
                             hintText: 'you@example.com',
+                            prefixIcon: Icon(Icons.alternate_email,
+                                color: AppColors.mutedOperationalInk),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -104,9 +171,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.next,
+                          enabled: !_isLoading,
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: AppColors.mutedOperationalInk),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
@@ -114,8 +184,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     : Icons.visibility_off_outlined,
                                 color: AppColors.mutedOperationalInk,
                               ),
-                              onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword),
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => setState(() =>
+                                      _obscurePassword = !_obscurePassword),
                             ),
                           ),
                           validator: (value) {
@@ -133,10 +205,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirm,
                           textInputAction: TextInputAction.done,
+                          enabled: !_isLoading,
                           onFieldSubmitted: (_) => _submit(),
                           decoration: InputDecoration(
                             labelText: 'Confirm password',
                             hintText: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: AppColors.mutedOperationalInk),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscureConfirm
@@ -144,8 +219,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     : Icons.visibility_off_outlined,
                                 color: AppColors.mutedOperationalInk,
                               ),
-                              onPressed: () => setState(
-                                  () => _obscureConfirm = !_obscureConfirm),
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => setState(
+                                      () => _obscureConfirm = !_obscureConfirm),
                             ),
                           ),
                           validator: (value) {
@@ -160,7 +237,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         FilledButton(
-                          onPressed: _submit,
+                          onPressed: _isLoading ? null : _submit,
                           style: FilledButton.styleFrom(
                             minimumSize: const Size.fromHeight(52),
                             shape: RoundedRectangleBorder(
@@ -168,21 +245,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   BorderRadius.circular(AppRadii.button),
                             ),
                           ),
-                          child: const Text('Create account'),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Create account'),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Text(
                         'Already have an account?',
                         style: AppTextStyles.bodyMuted,
                       ),
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text('Log in'),
                       ),
                     ],

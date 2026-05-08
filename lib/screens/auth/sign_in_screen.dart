@@ -135,6 +135,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Email',
                             hintText: 'you@example.com',
+                            prefixIcon: Icon(Icons.alternate_email,
+                                color: AppColors.mutedOperationalInk),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -157,6 +159,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: AppColors.mutedOperationalInk),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
